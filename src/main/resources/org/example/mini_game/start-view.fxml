@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+
+<Pane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="org.example.mini_game.StartGameController">
+    <Label text="Maze Game" layoutX="250" layoutY="20"/>
+    <Button fx:id="startGameButton" text="Start Game" layoutX="180" layoutY="120" onAction="#onStartGameClick"/>
+</Pane>

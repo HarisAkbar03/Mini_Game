@@ -23,7 +23,7 @@ public class MazeGame extends Application {
     private double scaleX, scaleY; // Scaling factors
 
     // Load maze image
-    private Image mazeImage = new Image(getClass().getResourceAsStream("/maze.png"));
+    private Image mazeImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/maze.png")));
     Pane root = new Pane();
     Scene scene = new Scene(root, 600, 600);
 
@@ -50,7 +50,7 @@ public class MazeGame extends Application {
         pixelReader = mazeImage.getPixelReader();
 
         // Load robot image
-        robot = new ImageView(new Image(getClass().getResourceAsStream("/robot.png")));
+        robot = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/robot.png"))));
         robot.setFitWidth(20);
         robot.setFitHeight(20);
         robot.setX(startX);
