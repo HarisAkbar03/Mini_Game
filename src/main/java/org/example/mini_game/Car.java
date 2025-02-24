@@ -1,102 +1,77 @@
+
 package org.example.mini_game;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelReader;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.util.*;
 
-public class MazeGame extends Application {
+public class Car {
     private static final int STEP = 5; // Movement step size
-    private ImageView robot;
+    private ImageView car;
     private PixelReader pixelReader;
-    private double scaleX, scaleY; // Scaling factors
-
-    // Load maze image
-    private Image mazeImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/maze.png")));
-    Car car = new Car();
-    TabPane tabPane = new TabPane();
-    Tab robotTab = new Tab("Robot Maze");
-    Tab carTab = new Tab("Car Maze");
-
-    Pane root = new Pane();
-    Pane root2 = car.start();
-    Scene scene = new Scene(tabPane, 600, 600);
-
-    private double startX = 15, startY = 380;
-    private double endX = 570, endY = 345;
+    private double scaleX, scaleY;
+    private double startX = 10, startY = 15;
+    private final double END_X = 545, END_Y = 510; // End coordinates
     private final double END_RANGE = 20; // Tolerance area for reaching the "End"
 
-    @Override
-    public void start(Stage stage) {
+    private Image maze2Image = new Image(getClass().getResourceAsStream("/maze2.png"));
+    private ImageView maze2 = new ImageView(maze2Image);
 
-        Label label = new Label("End");
-        label.setLayoutY(345);
-        label.setLayoutX(570);
+    public Pane start() {
+        Pane root1 = new Pane();
 
-        ImageView maze = new ImageView(mazeImage);
-        maze.setFitWidth(600);
-        maze.setFitHeight(600);
+        // Labels for start and end
+        Label endCar = new Label("End");
+        endCar.setFont(Font.font("Arial", FontWeight.BOLD, 13));
+        endCar.setTextFill(Color.BLACK);
+        endCar.setLayoutX(545);
+        endCar.setLayoutY(510);
 
-        // Calculate scaling factors
-        scaleX = mazeImage.getWidth() / maze.getFitWidth();
-        scaleY = mazeImage.getHeight() / maze.getFitHeight();
+        Label startCar = new Label("Start");
+        startCar.setFont(Font.font("Arial", FontWeight.BOLD, 13));
+        startCar.setTextFill(Color.BLACK);
+        startCar.setLayoutX(30);
+        startCar.setLayoutY(45);
 
-        // Get pixel reader from the maze image
-        pixelReader = mazeImage.getPixelReader();
+        maze2.setFitWidth(600);
+        maze2.setFitHeight(570);
 
-        // Load robot image
-        robot = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/robot.png"))));
-        robot.setFitWidth(20);
-        robot.setFitHeight(20);
-        robot.setX(startX);
-        robot.setY(startY);
+        // Initialize car
+        car = new ImageView(new Image(getClass().getResourceAsStream("/car.png")));
+        car.setFitWidth(30);
+        car.setFitHeight(30);
+        car.setX(startX);
+        car.setY(startY);
 
-        root.getChildren().addAll(maze, label, robot);
+        root1.getChildren().addAll(maze2, endCar, startCar, car);
 
-        robotTab.setContent(root);
-        carTab.setContent(root2);
+        // Calculate scaling factors for the car maze
+        scaleX = maze2Image.getWidth() / maze2.getFitWidth();
+        scaleY = maze2Image.getHeight() / maze2.getFitHeight();
 
-        tabPane.getTabs().addAll(robotTab, carTab);
+        // PixelReader to read maze2 image
+        pixelReader = maze2Image.getPixelReader();
 
+        // Find the shortest path for the car using A* algorithm
+        findCarPath();
 
-
-        stage.setTitle("Maze Puzzle");
-        stage.setScene(scene);
-        stage.show();
-
-        // Find the shortest path using A* algorithm
-        findPath();
-    }
-
-    // This method is to trigger pathfinding again after reset
-    public void restartGame() {
-        // Reset the robot's position to the start position
-        robot.setX(startX);
-        robot.setY(startY);
-
-        // Recalculate the scale and pixel reader in case we need it
-        scaleX = mazeImage.getWidth() / 600;
-        scaleY = mazeImage.getHeight() / 600;
-        pixelReader = mazeImage.getPixelReader();
-
-        // Trigger the pathfinding again
-        findPath();
+         return root1;
     }
 
     private String getKey(double x, double y) {
-        return x + "," + y;  // A simple combination of x and y
+        return x + "," + y;
     }
 
     private ArrayList<String> reconstructPath(Map<String, String> parents, String goalKey) {
@@ -105,23 +80,22 @@ public class MazeGame extends Application {
 
         // Backtrack from the goal to the start using the parents map
         while (currentKey != null) {
-            path.add(currentKey);  // Add the current node to the path
-            currentKey = parents.get(currentKey);  // Move to the parent node
+            path.add(currentKey);
+            currentKey = parents.get(currentKey);
         }
 
-        // Reverse the path so it goes from start to goal
+        // Reverse the path to go from start to goal
         Collections.reverse(path);
-
         return path;
     }
 
-    public void findPath() {
+    // Find path using A* for the car
+    public void findCarPath() {
         // Priority Queue to explore the nodes with the smallest f-value (f = g + h)
         PriorityQueue<Node> pq = new PriorityQueue<>(Comparator.comparingInt(n -> n.f));
 
-        // Map to track the shortest distance to each node (g-cost)
+        // Maps for shortest distance (g-cost) and parent nodes for path reconstruction
         Map<String, Integer> gCosts = new HashMap<>();
-        // Map to track the parent of each node (for path reconstruction)
         Map<String, String> parents = new HashMap<>();
 
         // Add the start node to the priority queue
@@ -140,13 +114,13 @@ public class MazeGame extends Application {
             String currentKey = getKey(currentX, currentY);
 
             // If we reached the destination, reconstruct the path
-            if (reachedEnd(currentX, currentY)) {
+            if (carReachedEnd(currentX, currentY)) {
                 ArrayList<String> path = reconstructPath(parents, currentKey);
-                moveRobotAlongPath(path);
+                moveCarAlongPath(path);
                 return;
             }
 
-            // Explore the neighboring positions
+            // Explore neighboring positions
             for (int i = 0; i < 4; i++) {
                 double newX = currentX + moveX[i];
                 double newY = currentY + moveY[i];
@@ -155,11 +129,11 @@ public class MazeGame extends Application {
                 if (!isValidMove(newX, newY)) continue;
 
                 String newKey = getKey(newX, newY);
-                int newGCost = current.g + 1; // All movements cost 1 step
+                int newGCost = current.g + 1;
                 int newHCost = calculateHeuristic(newX, newY);
                 int newFCost = newGCost + newHCost;
 
-                // If the new position provides a shorter path, update it
+                // If the new position offers a shorter path, update it
                 if (newGCost < gCosts.getOrDefault(newKey, Integer.MAX_VALUE)) {
                     gCosts.put(newKey, newGCost);
                     parents.put(newKey, currentKey);
@@ -167,27 +141,24 @@ public class MazeGame extends Application {
                 }
             }
         }
-
     }
 
-    // Check if the robot has reached the end (within tolerance range)
-    private boolean reachedEnd(double x, double y) {
-        return Math.abs(x - endX) < END_RANGE && Math.abs(y - endY) < END_RANGE;
+    // Check if the car has reached the end (within tolerance range)
+    private boolean carReachedEnd(double x, double y) {
+        return Math.abs(x - END_X) < END_RANGE && Math.abs(y - END_Y) < END_RANGE;
     }
 
     // Check if a position is a valid move (not a wall)
     private boolean isValidMove(double x, double y) {
-        // Map the robot's position to the original image coordinates
         int px = (int) (x * scaleX);
         int py = (int) (y * scaleY);
 
-        // Ensure coordinates are within the maze boundaries
-        if (px < 0 || py < 0 || px >= mazeImage.getWidth() || py >= mazeImage.getHeight()) {
+        if (px < 0 || py < 0 || px >= maze2Image.getWidth() || py >= maze2Image.getHeight()) {
             return false;
         }
 
         Color color = pixelReader.getColor(px, py);
-        return !isWall(color); // Only allow movement if it's not a wall
+        return !isWall(color);
     }
 
     // Helper method to check if a pixel is a wall (not white)
@@ -196,12 +167,13 @@ public class MazeGame extends Application {
         return !color.equals(white);
     }
 
-    // Calculate the heuristic using the Manhattan distance
+    // Calculate heuristic using Manhattan distance
     private int calculateHeuristic(double x, double y) {
-        return (int) (Math.abs(x - endX) + Math.abs(y - endY)); // Manhattan distance
+        return (int) (Math.abs(x - END_X) + Math.abs(y - END_Y)); // Manhattan distance
     }
 
-    private void moveRobotAlongPath(ArrayList<String> path) {
+    // Move the car along the path (animate movement)
+    private void moveCarAlongPath(ArrayList<String> path) {
         Timeline timeline = new Timeline();
         timeline.setCycleCount(path.size());
 
@@ -211,13 +183,13 @@ public class MazeGame extends Application {
             double x = Double.parseDouble(parts[0]);
             double y = Double.parseDouble(parts[1]);
 
-            // Adjust robot position with some offset or scaling tweak
-            double adjustedX = x - 20;  // Adjust the robot position to fix the offset
-            double adjustedY = y -10;
+            // Adjust car position with some offset or scaling tweak
+            double adjustedX = x - 20;
+            double adjustedY = y - 15;
 
-            KeyFrame keyFrame = new KeyFrame(Duration.millis(i * 30), e -> {
-                robot.setX(adjustedX);
-                robot.setY(adjustedY);
+            KeyFrame keyFrame = new KeyFrame(Duration.millis(i * 50), e -> {
+                car.setX(adjustedX);
+                car.setY(adjustedY);
             });
 
             timeline.getKeyFrames().add(keyFrame);
@@ -238,9 +210,5 @@ public class MazeGame extends Application {
             this.h = h;
             this.f = g + h;
         }
-    }
-
-    public static void main(String[] args) {
-        launch();
     }
 }
