@@ -212,7 +212,6 @@ public class MazeGame extends Application {
         timeline.play();  // Start the animation
     }
 
-
     // Node class to store information about each position
     static class Node {
         double x, y;
