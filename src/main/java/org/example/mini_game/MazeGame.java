@@ -19,7 +19,7 @@ import javafx.stage.Stage;
 import java.util.Objects;
 
 public class MazeGame extends Application {
-    private static final int STEP = 10;
+    private static final int STEP = 4;
     private ImageView robot;
     private PixelReader pixelReader;
     private double scaleX, scaleY;
@@ -119,11 +119,26 @@ public class MazeGame extends Application {
     }
 
     private boolean isValidMove(double x, double y) {
-        int px = (int) (x * scaleX);
-        int py = (int) (y * scaleY);
+        double robotWidth = robot.getFitWidth();
+        double robotHeight = robot.getFitHeight();
+        double[][] corners = {
+                {x, y},                               // Top-left
+                {x + robotWidth, y},                  // Top-right
+                {x, y + robotHeight},                 // Bottom-left
+                {x + robotWidth, y + robotHeight}       // Bottom-right
+        };
 
-        if (px < 0 || py < 0 || px >= mazeImage.getWidth() || py >= mazeImage.getHeight()) return false;
-        return !isWall(pixelReader.getColor(px, py));
+        for (double[] corner : corners) {
+            int px = (int) (corner[0] * scaleX);
+            int py = (int) (corner[1] * scaleY);
+            if (px < 0 || py < 0 || px >= mazeImage.getWidth() || py >= mazeImage.getHeight()) {
+                return false;
+            }
+            if (isWall(pixelReader.getColor(px, py))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean isWall(Color color) {
