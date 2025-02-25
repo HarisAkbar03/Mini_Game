@@ -14,7 +14,7 @@ public class Main extends Application {
         Pane root = loader.load();
 
         // Set up the scene and window size
-        Scene scene = new Scene(root, 700, 500);  // Increased window size for better visuals
+        Scene scene = new Scene(root, 600, 400);  // Increased window size for better visuals
 
         // Set the window title and show it
         stage.setTitle("Maze Game Menu");

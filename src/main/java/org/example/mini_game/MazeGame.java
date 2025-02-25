@@ -4,6 +4,8 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelReader;
@@ -30,6 +32,15 @@ public class MazeGame extends Application {
     public void start(Stage stage) {
         this.stage = stage;
 
+        // Set up TabPane and tabs
+        TabPane tabPane = new TabPane();
+        Tab mazeTab = new Tab("Maze Game");
+        Tab carTab = new Tab("Car Game");
+        mazeTab.setClosable(false);
+        carTab.setClosable(false);
+
+        // Setup maze scene
+        Pane mazeRoot = new Pane();
         Label endLabel = new Label("End");
         endLabel.setFont(Font.font(14));
         endLabel.setLayoutY(345);
@@ -49,11 +60,10 @@ public class MazeGame extends Application {
         robot.setX(startX);
         robot.setY(startY);
 
-        Pane root = new Pane();
-        root.getChildren().addAll(maze, endLabel, robot);
-        Scene scene = new Scene(root, 600, 600);
+        mazeRoot.getChildren().addAll(maze, endLabel, robot);
+        mazeTab.setContent(mazeRoot);
 
-        scene.setOnKeyPressed(event -> {
+        mazeRoot.setOnKeyPressed(event -> {
             double newX = robot.getX();
             double newY = robot.getY();
 
@@ -69,12 +79,22 @@ public class MazeGame extends Application {
 
                 if (reachedEnd(newX, newY)) {
                     System.out.println("🎉 Goal Reached! Moving to the Car scene...");
-                    Platform.runLater(this::showCarScene);
+                    Platform.runLater(() -> tabPane.getSelectionModel().select(carTab)); // Switch to car tab
                 }
             }
         });
 
-        stage.setTitle("Maze Puzzle");
+        // Set up car scene
+        Car carScene = new Car();
+        carTab.setContent(carScene.start());
+
+        // Add tabs to TabPane
+        tabPane.getTabs().addAll(mazeTab, carTab);
+        tabPane.getSelectionModel().select(mazeTab); // Start with the maze tab
+
+        // Create and display the scene
+        Scene scene = new Scene(tabPane, 600, 600);
+        stage.setTitle("Maze and Car Game");
         stage.setScene(scene);
         stage.show();
     }
@@ -103,12 +123,6 @@ public class MazeGame extends Application {
 
     private boolean isWall(Color color) {
         return !color.equals(Color.WHITE);
-    }
-
-    private void showCarScene() {
-        Car carScene = new Car();
-        Scene newScene = new Scene(carScene.start(), 600, 600);
-        stage.setScene(newScene);
     }
 
     public static void main(String[] args) {
