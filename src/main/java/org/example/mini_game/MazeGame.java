@@ -16,7 +16,7 @@ import javafx.stage.Stage;
 import java.util.Objects;
 
 public class MazeGame extends Application {
-    private static final int STEP = 5;
+    private static final int STEP = 10;
     private ImageView robot;
     private PixelReader pixelReader;
     private double scaleX, scaleY;
