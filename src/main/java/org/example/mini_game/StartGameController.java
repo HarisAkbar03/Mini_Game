@@ -13,7 +13,7 @@ public class StartGameController {
     private Button startGameButton;
 
     @FXML
-    private void onStartGameClick() {
+    private void onStartGameClick() throws Exception {
         // Get the current stage from the button
         Stage stage = (Stage) startGameButton.getScene().getWindow();
 

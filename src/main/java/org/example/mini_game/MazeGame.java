@@ -2,6 +2,7 @@ package org.example.mini_game;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
@@ -29,7 +30,7 @@ public class MazeGame extends Application {
     private Stage stage;
 
     @Override
-    public void start(Stage stage) {
+    public void start(Stage stage) throws Exception {
         this.stage = stage;
 
         // Set up TabPane and tabs
@@ -39,7 +40,7 @@ public class MazeGame extends Application {
         mazeTab.setClosable(false);
         carTab.setClosable(false);
 
-        // Setup maze scene
+        // Set up maze scene
         Pane mazeRoot = new Pane();
         Label endLabel = new Label("End");
         endLabel.setFont(Font.font(14));
@@ -63,27 +64,6 @@ public class MazeGame extends Application {
         mazeRoot.getChildren().addAll(maze, endLabel, robot);
         mazeTab.setContent(mazeRoot);
 
-        mazeRoot.setOnKeyPressed(event -> {
-            double newX = robot.getX();
-            double newY = robot.getY();
-
-            if (event.getCode() == KeyCode.RIGHT) newX += STEP;
-            else if (event.getCode() == KeyCode.LEFT) newX -= STEP;
-            else if (event.getCode() == KeyCode.UP) newY -= STEP;
-            else if (event.getCode() == KeyCode.DOWN) newY += STEP;
-
-            if (isValidMove(newX, newY)) {
-                robot.setX(newX);
-                robot.setY(newY);
-                logPixelData(newX, newY);
-
-                if (reachedEnd(newX, newY)) {
-                    System.out.println("🎉 Goal Reached! Moving to the Car scene...");
-                    Platform.runLater(() -> tabPane.getSelectionModel().select(carTab)); // Switch to car tab
-                }
-            }
-        });
-
         // Set up car scene
         Car carScene = new Car();
         carTab.setContent(carScene.start());
@@ -97,6 +77,31 @@ public class MazeGame extends Application {
         stage.setTitle("Maze and Car Game");
         stage.setScene(scene);
         stage.show();
+
+        // Listen for key events at the scene level
+        scene.setOnKeyPressed(event -> {
+            if (tabPane.getSelectionModel().getSelectedItem() == mazeTab) {
+                // Handle key events only if the Maze Tab is selected
+                double newX = robot.getX();
+                double newY = robot.getY();
+
+                if (event.getCode() == KeyCode.RIGHT) newX += STEP;
+                else if (event.getCode() == KeyCode.LEFT) newX -= STEP;
+                else if (event.getCode() == KeyCode.UP) newY -= STEP;
+                else if (event.getCode() == KeyCode.DOWN) newY += STEP;
+
+                if (isValidMove(newX, newY)) {
+                    robot.setX(newX);
+                    robot.setY(newY);
+                    logPixelData(newX, newY);
+
+                    if (reachedEnd(newX, newY)) {
+                        System.out.println("🎉 Goal Reached! Moving to the Car scene...");
+                        Platform.runLater(() -> tabPane.getSelectionModel().select(carTab)); // Switch to car tab
+                    }
+                }
+            }
+        });
     }
 
     private void logPixelData(double x, double y) {
